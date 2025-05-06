@@ -1,0 +1,107 @@
+openapi: 3.0.0
+info:
+  title: Weather Data API
+  description: API for retrieving weather data for different cities
+  version: 1.0.0
+servers:
+  - url: http://localhost:8081
+    description: Local development server
+
+paths:
+  /get/{city}:
+    get:
+      summary: Get weather data for a specific city
+      description: Retrieves weather data for either Würzburg or Mariehamn without date filters
+      parameters:
+        - name: city
+          in: path
+          required: true
+          description: Name of the city (wuerzburg or mariehamn)
+          schema:
+            type: string
+            enum: [wuerzburg, mariehamn]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherData'
+        '404':
+          description: City not found or invalid route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+  /get/{city}/{startDate}/{endDate}:
+    get:
+      summary: Get weather data for a specific city within a date range
+      description: Retrieves weather data for either Würzburg or Mariehamn filtered by date range
+      parameters:
+        - name: city
+          in: path
+          required: true
+          description: Name of the city (wuerzburg or mariehamn)
+          schema:
+            type: string
+            enum: [wuerzburg, mariehamn]
+        - name: startDate
+          in: path
+          required: true
+          description: Start date in YYYY-MM-DD format
+          schema:
+            type: string
+            format: date
+            example: "2023-04-01"
+        - name: endDate
+          in: path
+          required: true
+          description: End date in YYYY-MM-DD format
+          schema:
+            type: string
+            format: date
+            example: "2023-04-30"
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherData'
+        '404':
+          description: City not found or invalid route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    WeatherData:
+      type: object
+      properties:
+        # You might want to adjust these based on your actual database schema
+        temperature:
+          type: number
+          format: float
+          example: 22.5
+        humidity:
+          type: number
+          format: float
+          example: 65.0
+        timestamp:
+          type: string
+          format: date-time
+          example: "2023-04-01T12:00:00Z"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          example: "Route not found"
