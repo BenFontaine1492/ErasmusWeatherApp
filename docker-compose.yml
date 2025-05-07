@@ -45,6 +45,7 @@ services:
       MYSQL_PASSWORD: pass
     volumes:
       - db-data:/var/lib/mysql
+      - ./docs/db:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
   mqtt-subscriber:
