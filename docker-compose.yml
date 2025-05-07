@@ -47,5 +47,15 @@ services:
       - db-data:/var/lib/mysql
     ports:
       - "3306:3306"
+  mqtt-subscriber:
+    build:
+      context: .
+      dockerfile: ./docker/python/Dockerfile
+    ports:
+      - "8083:80"  
+    container_name: mqtt-subscriber
+    depends_on:
+      - db
+    restart: always    
 volumes:
   db-data:
