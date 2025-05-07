@@ -7,12 +7,12 @@ header('Access-Control-Allow-Origin: http://localhost:8080');
 require_once("./Router.php"); 
 
 $router = new Router;
-$tablename = $router->route();
+$queryData = $router->route();
 
 require_once("./DataFetcher.php");
 
 $fetcher = new DataFetcher;
-$result = $fetcher->fetch($tablename);
+$result = $fetcher->fetch($queryData);
 
 echo $result;
 

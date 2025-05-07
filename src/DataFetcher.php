@@ -29,12 +29,12 @@ class DataFetcher{
     
         // Query in case Dates are provided
         if ($startDate instanceof DateValue && $endDate instanceof DateValue) {
-            $sql .= " WHERE date BETWEEN ? AND ?";
+            $sql .= " WHERE time BETWEEN ? AND ?";
             $types = 'ss';
             $params = [$startDate->get(), $endDate->get()];
         }
     
-        $sql .= " ORDER BY date ASC";
+        $sql .= " ORDER BY time ASC";
     
         $stmt = $conn->prepare($sql);
         if ($types) {
