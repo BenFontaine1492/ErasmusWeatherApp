@@ -1,61 +1,121 @@
-<?php 
+<?php
+declare(strict_types = 1);
 
-declare(strict_types=1);
 
-require_once("./ValueObjects/DateValue.php");
+$uri = new Uri;
+$router = new Router($routes);
+
+$routeObject = $router -> findRoute($uri -> getUrlArr(''));
+
+//Handle preflight requests
+if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
+    new Response([], 204);
+}
+
+if ($routeObject -> route) {
+    require_once './request.php';
+    require_once './db.php';
+
+    //include routed file
+    require_once './endpoints/' . $routeObject -> route -> file;
+    //Call routed function
+    call_user_func_array($routeObject -> route -> function, [['params' => $routeObject -> params, 'request' => new Request()]]);
+} else {
+    Response::notFound();
+}
+
+
 class Router {
+
+    private array $routes = [];
+    private array $routesObj;
+    public stdClass $route;
+
+    function __construct(array $routes) {
+        $this -> routesObj = $routes;
+        foreach ($routes as $route) {
+            array_push($this -> routes, $route -> path);
+        }
+    }
     
+    public function findRoute(array $uri) {
+        $return = new stdClass();
+        $return -> route = false;
+        $return -> params = [];
 
-    #returns the table from which data will be displayed.
-    public function route(): array
-    {
+        if (count($uri) === 0) {
+            $this -> route = $this -> routesObj[0];
+            $return -> route = $this -> routesObj[0];
+            return $return;
+        }
+        foreach ($this -> routes as $index => $route) {
 
-    $path = parse_url($_SERVER['REQUEST_URI'], PHP_URL_PATH);
-    $path = trim($path, '/');
-    $path = strtolower($path);
-
-    /* REGEX explanation: 
-
-            ^	                    Start of the string	Ensures the match starts at the beginning of the path
-            get/	                The literal string "get/"	
-            ([a-z]+)	            Captures the city name — one or more lowercase letters e.g. wuerzburg or marieham	
-            /	                    Literal slash
-            (\d{4}-\d{2}-\d{2})		Captures the start date in YYYY-MM-DD format e.g. 2023-04-01
-            /	                    Literal slash
-            (\d{4}-\d{2}-\d{2})		Captures the end date in YYYY-MM-DD format e.g. 2023-04-30
-            $	                    End of the string,	Ensures no extra text comes after the expected route
-
-    */
-    if (preg_match('#^get/([a-z]+)/(\d{4}-\d{2}-\d{2})/(\d{4}-\d{2}-\d{2})$#', $path, $matches)) {
-        [, $city, $start, $end] = $matches;
-    }
-    // Match without date range
-    elseif (preg_match('#^get/([a-z]+)$#', $path, $matches)) {
-        [, $city] = $matches;
-        $start = $end = null;
-    }
-    else {
-        http_response_code(404);
-        echo json_encode(['error' => 'Route not found']);
-        exit;
-    }
-
-    $table = match ($city) {
-        'wuerzburg' => 'weather_data_ger',
-        'mariehamn' => 'weather_data_fin',
-        default => null,
-    };
-
-    if (!$table) {
-        http_response_code(404);
-        echo json_encode(['error' => 'Unknown city']);
-        exit;
-    }
-
-    return [
-        'table' => $table,
-        'start' => $start ? new DateValue($start) : null,
-        'end'   => $end ? new DateValue($end) : null
-    ];
+            $route = array_slice(explode('/',strtolower($route)), 1);
+            /*
+            if ($uri[0] != $route[0]) {
+                continue;
+            }
+            */
+            if (count($uri) != count($route)){
+                continue;
+            }
+            foreach ($route as $i => $comp) {
+                if ($comp[0] === ':'){
+                    if (is_string($uri[$i])) {
+                        $return -> params[substr($comp, 1)] = $uri[$i];
+                        continue;
+                    } else {
+                        continue 2;
+                    }
+                } elseif ($uri[$i] === $comp) {
+                    continue;
+                } else {
+                    continue 2;
+                }
+            }
+            $this -> route = $this -> routesObj[$index];
+            $return -> route = $this -> routesObj[$index];
+            return $return;
+        }
+        return $return;
     }
 }
+
+class Uri {
+
+    public $uri;
+
+    function __construct() {
+        $this -> uri = $_SERVER['REQUEST_URI'];
+    }
+    /**
+     * converts raw uri to a usable uri array
+     * @param string $root the api's parent directory
+     * @return array The usable uri array
+     */
+    function getUrlArr(string $root): Array {
+        $uriArrRoot = explode('/', strtolower($this -> uri));
+        //check if root is in root
+        if ($root !== '') {
+            $rootIndex = array_search(strtolower($root), $uriArrRoot);
+        } else {
+            $rootIndex = 0;
+        }
+        //Error if root isn't found
+        if (!is_integer($rootIndex)) {
+            throw new Error('The given root could not be found');
+        }
+
+        //Remove get parameters
+        $uriArr = array_slice($uriArrRoot, $rootIndex + 1);
+        $lastComp = explode('?', end($uriArr));
+        $uriArr[count($uriArr) - 1] = $lastComp[0];
+
+        //fix if trailing slash
+        if (end($uriArr) === '') {
+            array_pop($uriArr);
+        }
+        return $uriArr;
+    }
+}
+?>
