@@ -24,23 +24,23 @@ password: pass
 you will need to create two tables with the following command (i am too lazy to write a script to do this on startup) : 
 ```
 create table weather_data_fin (
-    id INT auto_increment primary key,
-    avg_temp_c float,
-    avg_temp_f float,
-    avg_airpressure float,
-    avg_humidity float,
-    date date
-) 
+    id int auto_increment primary key,
+    temp float,
+    hum float,
+    time datetime,
+    pressure float,
+    location varchar(100)
+); 
 ```
 ```
 create table weather_data_ger (
-    id INT auto_increment primary key,
-    avg_temp_c float,
-    avg_temp_f float,
-    avg_airpressure float,
-    avg_humidity float,
-    date date
-) 
+    id int auto_increment primary key,
+    temp float,
+    hum float,
+    time datetime,
+    pressure float,
+    location varchar(100)
+); 
 ```
 
 TODO: for ESP32 Data we will need to use "Datetime" type for date, not "date"
