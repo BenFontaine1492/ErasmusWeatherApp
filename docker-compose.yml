@@ -37,6 +37,7 @@ services:
 
   db:
     image: mysql:8.0
+    container_name: mysql_main
     restart: always
     environment:
       MYSQL_ROOT_PASSWORD: root
@@ -48,15 +49,34 @@ services:
       - ./docs/db:/docker-entrypoint-initdb.d
     ports:
       - "3306:3306"
+
   mqtt-subscriber:
     build:
       context: .
       dockerfile: ./docker/python/Dockerfile
     ports:
-      - "8083:80"  
+      - "8083:80"
     container_name: mqtt-subscriber
     depends_on:
       - db
-    restart: always    
+    restart: always
+
+  mysql-cron-backup:
+    image: fradelg/mysql-cron-backup
+    depends_on:
+      - db
+    volumes:
+      - ./backup:/backup
+    environment:
+      - MYSQL_HOST=mysql_main
+      - MYSQL_USER=root
+      - MYSQL_PASS=root
+      - MAX_BACKUPS=15
+      - INIT_BACKUP=0
+      # Every day at 03:00
+      - CRON_TIME=0 3 * * *
+      # Make it small
+      - GZIP_LEVEL=9
+    restart: unless-stopped
 volumes:
   db-data:
