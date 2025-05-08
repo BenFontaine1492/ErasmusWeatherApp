@@ -9,7 +9,7 @@ class DB {
         'host' => 'db',
         'db' => 'weather',
         'user' => 'user',
-        'password' => 'pass'
+        'password' => 'root'
     ];
 
     private array $tables = [
