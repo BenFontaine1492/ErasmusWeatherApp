@@ -45,7 +45,7 @@ class DB {
             $params = [$startDate -> get(), $endDate -> get()];
         }
 
-        $sql .= " ORDER BY time ASC";
+        $sql .= " ORDER BY time DESC";
 
         $stmt = $this -> conn -> prepare($sql);
         if ($types) {
@@ -76,7 +76,7 @@ class DB {
         $types = '';
         $params = [];
 
-        $sql .= " ORDER BY time ASC LIMIT 1";
+        $sql .= " ORDER BY time DESC LIMIT 1";
 
         $stmt = $this -> conn -> prepare($sql);
         if ($types) {
