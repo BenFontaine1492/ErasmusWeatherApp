@@ -5,15 +5,15 @@ declare(strict_types=1);
 class DateValue
 {
     private string $value;
-    private DateTime $date;
 
     public function __construct(string $date)
-    {
-        $d = \DateTime::createFromFormat('Y-m-d H:i:s', $date);
-        if (!$d || $d->format('Y-m-d H:i:s') !== $date) {
-            throw new InvalidArgumentException("Invalid date format: $date");
+    {   
+        $decodedDate = urldecode($date);
+        $d = \DateTime::createFromFormat('Y-m-d H:i:s', $decodedDate);
+        if (!$d || $d->format('Y-m-d H:i:s') !== $decodedDate) {
+            throw new InvalidArgumentException("Invalid date format: $decodedDate");
         }
-        $this->value = $date;
+        $this -> value = $decodedDate;
     }
 
     public function __toString(): string
@@ -24,11 +24,6 @@ class DateValue
     public function get(): string
     {
         return $this -> value;
-    }
-
-    public function getDate(): DateTime
-    {
-        return $this -> date;
     }
 }
 
