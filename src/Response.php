@@ -9,7 +9,7 @@ class Response {
 
         $json = json_encode($responseObject, JSON_PRETTY_PRINT | JSON_UNESCAPED_UNICODE);
 
-        header('Access-Control-Allow-Origin: http://localhost:8080');
+        header('Access-Control-Allow-Origin: *');
         header('Content-Type: application/json');
         http_response_code($httpStatusCode);
 
