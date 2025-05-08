@@ -12,9 +12,9 @@ logging.basicConfig(
 
 logging.info("🚀 MQTT subscriber started and running...")
 
-BROKER = "192.168.108.14:1883"
+BROKER = "192.168.108.14"
 PORT = 1883
-TOPIC = "Wuerzburg3/KOS/#"
+TOPIC = "Wuerzburg3/#"
 
 # Database config
 DB_CONFIG = {
