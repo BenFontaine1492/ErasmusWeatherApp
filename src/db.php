@@ -40,12 +40,12 @@ class DB {
 
         // Query in case Dates are provided
         if ($startDate instanceof DateValue && $endDate instanceof DateValue) {
-            $sql .= " WHERE date BETWEEN ? AND ?";
+            $sql .= " WHERE time BETWEEN ? AND ?";
             $types = 'ss';
             $params = [$startDate -> get(), $endDate -> get()];
         }
 
-        $sql .= " ORDER BY date ASC";
+        $sql .= " ORDER BY time ASC";
 
         $stmt = $this -> conn -> prepare($sql);
         if ($types) {
@@ -76,7 +76,7 @@ class DB {
         $types = '';
         $params = [];
 
-        $sql .= " ORDER BY date ASC LIMIT 1";
+        $sql .= " ORDER BY time ASC LIMIT 1";
 
         $stmt = $this -> conn -> prepare($sql);
         if ($types) {
@@ -86,14 +86,9 @@ class DB {
         $stmt -> execute();
         $result = $stmt->get_result();
 
-        $data = [];
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row;
-        }
-
         $stmt -> close();
 
-        return $data;
+        return $result->fetch_assoc();
     }
 }
 ?>

@@ -43,10 +43,14 @@ function weather($args) {
             
             $getParams = $args['request'] -> getGetData();
             
-            if (isset($getParams['from']) && isset($getParams['to'])) {
-                getBeetwen($getParams['from'], $getParams['to'], $table);
-            } else {
-                getAll($table);
+            try {
+                if (isset($getParams['from']) && isset($getParams['to'])) {
+                    getBeetwen($getParams['from'], $getParams['to'], $table);
+                } else {
+                    getAll($table);
+                }
+            } catch (InvalidArgumentException) {
+                Response::badRequest('invalid date time parameters provided');
             }
 
             break;
@@ -80,7 +84,11 @@ function getLatest($args) {
     }
     
     $db = new DB;
-    $result = $db -> getLastFromTable($table);
+    try {
+        $result = $db -> getLastFromTable($table);
+    } catch (InvalidArgumentException) {
+        Response::badRequest('invalid date time parameters provided');
+    }
 
     new Response($result);
 }
