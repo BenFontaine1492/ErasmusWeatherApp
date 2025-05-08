@@ -1,9 +1,9 @@
 <?php
 declare(strict_types=1);
 
-require_once("./response.php");
+require_once("./Response.php");
 require_once("./routes.php");
-require_once("./router.php");
+require_once("./Router.php");
 
 $uri = new Uri;
 $router = new Router($routes);
@@ -16,8 +16,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
 }
 
 if ($routeObject -> route) {
-    require_once './request.php';
-    require_once './db.php';
+    require_once './Request.php';
+    require_once './DB.php';
 
     //include routed file
     require_once './endpoints/' . $routeObject -> route -> file;
