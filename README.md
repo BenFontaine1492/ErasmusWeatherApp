@@ -35,7 +35,7 @@ Once the database container is running, connect locally with:
 
 ### Table Setup
 
-Run the following SQL commands to create the required tables:
+The following queries will be used to create the tables:
 
 ```sql
 CREATE TABLE weather_data_fin (
