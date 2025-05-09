@@ -1,64 +1,90 @@
-# ErasmusWeatherApp
+# 🌤️ ErasmusWeatherApp
 
+A weather data tracking application using Docker, PHP, Python, and MySQL. This project collects and visualizes environmental data via MQTT-connected ESP32 devices.
 
-## Startup 
+---
 
-To start the App use the "make startup" command in the terminal,
-for restarting the containers and further commands please refer to the Makefile. 
+## 🚀 Getting Started
 
-"make install" (included in make startup) will install required python and js dependencies.
+### Startup
 
-To run the make commands you will need Linux or WSL (Ne, Jakob. Zwinkersmiley) 
+To start the app, run:
 
-## Development
-
-Once the database container is running you can connect to it locally with following login data: 
-
-host: localhost
-port: 3306
-user: user etc.
-password: pass 
-
-The data on the DB will be created using the following commands : 
-```
-create table weather_data_fin (
-    id int auto_increment primary key,
-    temp float,
-    hum float,
-    time datetime,
-    pressure float,
-    location varchar(100)
-); 
-```
-```
-create table weather_data_ger (
-    id int auto_increment primary key,
-    temp float,
-    hum float,
-    time datetime,
-    pressure float,
-    location varchar(100)
-); 
+```bash
+make startup
 ```
 
-If you do not yet have an ESP32 that pushes data to a broker you are subscribed to,
-you will need to insert example data to your database. 
+This command installs all necessary Python and JavaScript dependencies (via `make install`) and spins up the Docker containers.
 
-If you want to have a basic frontend,
-you will need to uncomment the frontend docker container in the docker-compose.yml
-The frontend can be reached under http://localhost:8080
+> 💡 Make sure you're running on **Linux** or **WSL** (Ne, Jakob Zwinkersmiley).
 
-## TechStack 
+For other commands (restarting containers, rebuilding, etc.), refer to the `Makefile`.
 
-### Frontend 
+---
+
+## 🛠️ Development
+
+### Database Access
+
+Once the database container is running, connect locally with:
+
+- **Host:** `localhost`  
+- **Port:** `3306`  
+- **User:** `user` *(replace with actual)*  
+- **Password:** `pass` *(replace with actual)*  
+
+### Table Setup
+
+Run the following SQL commands to create the required tables:
+
+```sql
+CREATE TABLE weather_data_fin (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    temp FLOAT,
+    hum FLOAT,
+    time DATETIME,
+    pressure FLOAT,
+    location VARCHAR(100)
+);
+```
+
+```sql
+CREATE TABLE weather_data_ger (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    temp FLOAT,
+    hum FLOAT,
+    time DATETIME,
+    pressure FLOAT,
+    location VARCHAR(100)
+);
+```
+
+### ESP32 Note
+
+If you don't have an ESP32 device pushing data to your MQTT broker, you'll need to manually insert example data into your database.
+
+### Frontend Access
+
+To enable the frontend:
+
+1. Uncomment the relevant container in `docker-compose.yml`.
+2. Visit the frontend at: [http://localhost:8080](http://localhost:8080)
+
+---
+
+## 🧰 Tech Stack
+
+### 🌐 Frontend
+
 - [JavaScript](https://developer.mozilla.org/en-US/docs/Web/JavaScript)
-- [ChartJS](https://www.chartjs.org/docs/latest/)
+- [Chart.js](https://www.chartjs.org/docs/latest/)
 
-### Backend 
+### 🖥️ Backend
+
 - [PHP](https://www.php.net/docs.php)
-- [Docker](https://docs.docker.com/)
 - [Python](https://docs.python.org/3/)
+- [Docker](https://docs.docker.com/)
 
-### Database 
+### 🗄️ Database
+
 - [MySQL](https://dev.mysql.com/doc/)
-
