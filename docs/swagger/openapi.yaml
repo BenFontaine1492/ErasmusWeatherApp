@@ -1,0 +1,124 @@
+openapi: 3.0.0
+info:
+  title: Weather Data API
+  description: API for retrieving weather data for different cities
+  version: 1.0.0
+servers:
+  - url: http://192.168.108.13:8081
+    description: FBIT.IoT.Router7
+  - url: http://localhost:8081
+    description: Local development server
+
+paths:
+  /{city}:
+    get:
+      summary: Get weather data for a specific city either with or without a date time span
+      description: Retrieves weather data for either Würzburg or Mariehamn with or without a date time span
+      parameters:
+        - name: city
+          in: path
+          required: true
+          description: Name of the city (wuerzburg or mariehamn)
+          schema:
+            type: string
+            enum: [wuerzburg, mariehamn]
+        - name: from
+          in: query
+          description: Start date in YYYY-MM-DD HH:MM:SS format
+          schema:
+            type: string
+            format: date-time
+            example: "2025-05-01 00:00:00"
+        - name: to
+          in: query
+          description: End date in YYYY-MM-DD HH:MM:SS format
+          schema:
+            type: string
+            format: date-time
+            example: "2025-05-31 23:59:59"
+
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherData'
+        '404':
+          description: City not found or invalid route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+
+  /{city}/latest:
+    get:
+      summary: Get latest weather data point for a specific city
+      description: Retrieves latest weather data point for either Würzburg or Mariehamn 
+      parameters:
+        - name: city
+          in: path
+          required: true
+          description: Name of the city (wuerzburg or mariehamn)
+          schema:
+            type: string
+            enum: [wuerzburg, mariehamn]
+      responses:
+        '200':
+          description: Successful response
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/WeatherData'
+        '404':
+          description: City not found or invalid route
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Error'
+
+components:
+  schemas:
+    WeatherData:
+      type: object
+      properties:
+        # You might want to adjust these based on your actual database schema
+        id:
+          type: number
+          format: int
+          example: 33
+        temp:
+          type: number
+          format: float
+          example: 22.5
+        hum:
+          type: number
+          format: float
+          example: 65.0
+        pressure:
+          type: number
+          format: float
+          example: 1013.7
+        location:
+          type: string
+          enum: [mariehamn, wuerzburg]
+        time:
+          type: string
+          format: date-time
+          example: "2023-04-01 12:00:00"
+
+    Error:
+      type: object
+      properties:
+        error:
+          type: string
+          enum: [Unauthorized, Forbidden, Not Found, Method Not Allowed, Internal Server Error]
+          example: Not Found
+        msg:
+          type: string
+          example: city could not be found
