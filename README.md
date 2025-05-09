@@ -4,11 +4,9 @@
 ## Startup 
 
 To start the App use the "make startup" command in the terminal,
-for restarting the containers etc. please refer to the Makefile.
+for restarting the containers and further commands please refer to the Makefile. 
 
-Sometimes it doesn't work (i don't know why yet), so use : make build_dev, make install and make run  instead. 
-
-make install will install the vendor folder wich contains chart.js
+"make install" (included in make startup) will install required python and js dependencies.
 
 To run the make commands you will need Linux or WSL (Ne, Jakob. Zwinkersmiley) 
 
@@ -18,10 +16,10 @@ Once the database container is running you can connect to it locally with follow
 
 host: localhost
 port: 3306
-user: user 
+user: user etc.
 password: pass 
 
-you will need to create two tables with the following command (i am too lazy to write a script to do this on startup) : 
+The data on the DB will be created using the following commands : 
 ```
 create table weather_data_fin (
     id int auto_increment primary key,
@@ -43,9 +41,12 @@ create table weather_data_ger (
 ); 
 ```
 
-TODO: for ESP32 Data we will need to use "Datetime" type for date, not "date"
+If you do not yet have an ESP32 that pushes data to a broker you are subscribed to,
+you will need to insert example data to your database. 
 
-and then add example data.
+If you want to have a basic frontend,
+you will need to uncomment the frontend docker container in the docker-compose.yml
+The frontend can be reached under http://localhost:8080
 
 ## TechStack 
 
@@ -56,9 +57,8 @@ and then add example data.
 ### Backend 
 - [PHP](https://www.php.net/docs.php)
 - [Docker](https://docs.docker.com/)
+- [Python](https://docs.python.org/3/)
 
 ### Database 
 - [MySQL](https://dev.mysql.com/doc/)
-
-
 
