@@ -1,8 +1,18 @@
+VENV_DIR := venv
+PYTHON := python3
+
 install:
-	mkdir -p vendor && cd vendor && npm init -y && npm install chart.js
+	# Node.js setup
+	# mkdir -p vendor && cd vendor && npm init -y && npm install chart.js
+	# Python setup
+	$(PYTHON) -m venv $(VENV_DIR)
+	$(VENV_DIR)/bin/pip install --upgrade pip
+	$(VENV_DIR)/bin/pip install -r requirements.txt
 
 startup:
-	build_dev install run
+	make build_dev
+	make install
+	make run
 
 build_dev:
 	docker-compose build
