@@ -4,14 +4,16 @@ info:
   description: API for retrieving weather data for different cities
   version: 1.0.0
 servers:
+  - url: http://192.168.108.13:8081
+    description: FBIT.IoT.Router7
   - url: http://localhost:8081
     description: Local development server
 
 paths:
-  /get/{city}:
+  /{city}:
     get:
-      summary: Get weather data for a specific city
-      description: Retrieves weather data for either Würzburg or Mariehamn without date filters
+      summary: Get weather data for a specific city either with or without a date time span
+      description: Retrieves weather data for either Würzburg or Mariehamn with or without a date time span
       parameters:
         - name: city
           in: path
@@ -20,6 +22,21 @@ paths:
           schema:
             type: string
             enum: [wuerzburg, mariehamn]
+        - name: from
+          in: query
+          description: Start date in YYYY-MM-DD HH:MM:SS format
+          schema:
+            type: string
+            format: date-time
+            example: "2025-05-01 00:00:00"
+        - name: to
+          in: query
+          description: End date in YYYY-MM-DD HH:MM:SS format
+          schema:
+            type: string
+            format: date-time
+            example: "2025-05-31 23:59:59"
+
       responses:
         '200':
           description: Successful response
@@ -36,10 +53,11 @@ paths:
               schema:
                 $ref: '#/components/schemas/Error'
 
-  /get/{city}/{startDate}/{endDate}:
+
+  /{city}/latest:
     get:
-      summary: Get weather data for a specific city within a date range
-      description: Retrieves weather data for either Würzburg or Mariehamn filtered by date range
+      summary: Get latest weather data point for a specific city
+      description: Retrieves latest weather data point for either Würzburg or Mariehamn 
       parameters:
         - name: city
           in: path
@@ -48,22 +66,6 @@ paths:
           schema:
             type: string
             enum: [wuerzburg, mariehamn]
-        - name: startDate
-          in: path
-          required: true
-          description: Start date in YYYY-MM-DD format
-          schema:
-            type: string
-            format: date
-            example: "2023-04-01"
-        - name: endDate
-          in: path
-          required: true
-          description: End date in YYYY-MM-DD format
-          schema:
-            type: string
-            format: date
-            example: "2023-04-30"
       responses:
         '200':
           description: Successful response
@@ -86,22 +88,37 @@ components:
       type: object
       properties:
         # You might want to adjust these based on your actual database schema
-        temperature:
+        id:
+          type: number
+          format: int
+          example: 33
+        temp:
           type: number
           format: float
           example: 22.5
-        humidity:
+        hum:
           type: number
           format: float
           example: 65.0
-        timestamp:
+        pressure:
+          type: number
+          format: float
+          example: 1013.7
+        location:
+          type: string
+          enum: [mariehamn, wuerzburg]
+        time:
           type: string
           format: date-time
-          example: "2023-04-01T12:00:00Z"
+          example: "2023-04-01 12:00:00"
 
     Error:
       type: object
       properties:
         error:
           type: string
-          example: "Route not found"
+          enum: [Unauthorized, Forbidden, Not Found, Method Not Allowed, Internal Server Error]
+          example: Not Found
+        msg:
+          type: string
+          example: city could not be found
