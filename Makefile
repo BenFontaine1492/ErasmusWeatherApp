@@ -20,6 +20,11 @@ build_dev:
 run:
 	docker-compose up -d
 
+rebuild:
+	make stop
+	make build_dev
+	make run
+
 stop:
 	docker-compose down
 
