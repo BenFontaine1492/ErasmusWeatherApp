@@ -1,6 +1,6 @@
 # 🌤️ ErasmusWeatherApp
 
-A weather data tracking application using Docker, PHP, Python, and MySQL. This project collects and visualizes environmental data via MQTT-connected ESP32 devices.
+A weather data tracking application using Docker, PHP, Python, and MySQL. This project collects environmental data via MQTT-connected ESP32 devices and provides the data via php-api endpoints.
 
 ---
 
