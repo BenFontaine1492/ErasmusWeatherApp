@@ -4,7 +4,7 @@ create table weather_data_fin (
     hum float,
     time datetime,
     pressure float,
-    location varchar(100)
+    location varchar(100),
     warnings text
 );
 create table weather_data_ger (
@@ -13,6 +13,6 @@ create table weather_data_ger (
     hum float,
     time datetime,
     pressure float,
-    location varchar(100)
+    location varchar(100),
     warnings text
 );
