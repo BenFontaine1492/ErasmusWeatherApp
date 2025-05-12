@@ -23,7 +23,7 @@ DB_CONFIG = {
     'user': 'user',
     'password': 'pass'
 }
-
+        
 # Connect to the database
 def connect_db():
     try:
@@ -55,16 +55,46 @@ def on_message(client, userdata, msg):
         time = data.get("time", None)
         pressure = float(data.get("pressure", 0.0))
         location = data.get("location", "Unknown")
+    
+        # Validate each field
+        thresholds = {
+            "temp": 50.0,        # example: max 50°C
+            "hum": 80.0,         # example: max 80%
+            "pressure": 1050.0   # example: max 1050 hPa
+        }
+
+        warnings = {}
+
+       
+        if temp > thresholds["temp"]:
+            warnings["temp"] = f"Temperature too high: {temp}°C"
+
+        if hum > thresholds["hum"]:
+            warnings["hum"] = f"Humidity too high: {hum}%"
+
+        if pressure > thresholds["pressure"]:
+            warnings["pressure"] = f"Pressure too high: {pressure} hPa"
+
 
         # Insert into DB
         conn = connect_db()
         cursor = conn.cursor()
 
-        insert_query = """
-            INSERT INTO weather_data_ger (temp, hum, time, pressure, location)
-            VALUES (%s, %s, %s, %s, %s)
+        city = location.lower()
+        if city == "mariehamn":
+            table_name = "weather_data_fin"
+        elif city == "wuerzburg":
+            table_name = "weather_data_ger"
+        else:
+            logging.warning(f"⚠️ Unknown location '{location}'")
+            
+
+        insert_query = f"""
+            INSERT INTO {table_name} (temp, hum, time, pressure, location, warnings)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        values = (temp, hum, time, pressure, location)
+
+        values = (temp, hum, time, pressure, location, json.dumps(warnings))
 
         logging.info(f"📝 Inserting into DB: {values}")
         cursor.execute(insert_query, values)
