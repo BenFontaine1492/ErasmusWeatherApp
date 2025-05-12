@@ -56,25 +56,35 @@ def on_message(client, userdata, msg):
         pressure = float(data.get("pressure", 0.0))
         location = data.get("location", "Unknown")
     
-        # Validate each field
+        # Validation thresholds
         thresholds = {
-            "temp": 50.0,        # example: max 50°C
-            "hum": 80.0,         # example: max 80%
-            "pressure": 1050.0   # example: max 1050 hPa
+            "temp_max": 50.0,       # Max 50°C
+            "temp_min": -20.0,      # Min -20°C
+            "hum_max": 80.0,        # Max 80%
+            "hum_min": 0.0,         # Min 0%
+            "pressure_max": 1050.0, # Max 1050 hPa
+            "pressure_min": 800.0   # Min 800 hPa
         }
 
         warnings = {}
 
-       
-        if temp > thresholds["temp"]:
-            warnings["temp"] = f"Temperature too high: {temp}°C"
+        # Temperature checks
+        if temp > thresholds["temp_max"]:
+            warnings["temp_high"] = f"Temperature too high: {temp}°C"
+        elif temp < thresholds["temp_min"]:
+            warnings["temp_low"] = f"Temperature too low: {temp}°C"
 
-        if hum > thresholds["hum"]:
-            warnings["hum"] = f"Humidity too high: {hum}%"
+        # Humidity checks
+        if hum > thresholds["hum_max"]:
+            warnings["hum_high"] = f"Humidity too high: {hum}%"
+        elif hum < thresholds["hum_min"]:
+            warnings["hum_low"] = f"Humidity too low: {hum}%"
 
-        if pressure > thresholds["pressure"]:
-            warnings["pressure"] = f"Pressure too high: {pressure} hPa"
-
+        # Pressure checks
+        if pressure > thresholds["pressure_max"]:
+            warnings["pressure_high"] = f"Pressure too high: {pressure} hPa"
+        elif pressure < thresholds["pressure_min"]:
+            warnings["pressure_low"] = f"Pressure too low: {pressure} hPa"
 
         # Insert into DB
         conn = connect_db()
