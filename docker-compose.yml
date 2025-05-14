@@ -35,21 +35,6 @@ services:
     volumes:
       - ./docs/swagger:/swagger
 
-  db:
-    image: mysql:8.0
-    container_name: mysql_main
-    restart: always
-    environment:
-      MYSQL_ROOT_PASSWORD: root
-      MYSQL_DATABASE: weather
-      MYSQL_USER: user
-      MYSQL_PASSWORD: pass
-    volumes:
-      - db-data:/var/lib/mysql
-      - ./docs/db:/docker-entrypoint-initdb.d
-    ports:
-      - "3306:3306"
-
   mqtt-subscriber:
     build:
       context: .
@@ -78,5 +63,19 @@ services:
       # Make it small
       - GZIP_LEVEL=9
     restart: unless-stopped
+  db:
+    image: influxdb:2.7
+    ports:
+      - "8086:8086"
+    volumes:
+      - influxdb-data:/var/lib/influxdb2
+    environment:
+      - DOCKER_INFLUXDB_INIT_MODE=setup
+      - DOCKER_INFLUXDB_INIT_USERNAME=admin
+      - DOCKER_INFLUXDB_INIT_PASSWORD=admin123
+      - DOCKER_INFLUXDB_INIT_ORG=your-org
+      - DOCKER_INFLUXDB_INIT_BUCKET=weather
+      - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=your-token
+
 volumes:
-  db-data:
+    influxdb-data:
