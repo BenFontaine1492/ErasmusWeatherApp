@@ -1,4 +1,4 @@
-// Includes
+// Includes for all libraries
 #include <Wire.h>
 #include <Adafruit_Sensor.h>
 #include <Adafruit_BME280.h>
@@ -17,12 +17,14 @@
 #define SCREEN_HEIGHT 64
 
 // WiFi/MQTT credentials
+// SSID and MQTT Server IPs must be changed if conected to a new Network or Broker
 const char* ssid = "FBIT.IoT.Router7";
 const char* password = "WueLoveIoT";
 const char* mqttServer = "192.168.108.14";
 const int mqttPort = 1883;
 bool sent;
 
+// Daylightoffset now 0 due to Mariehamn
 // NTP config for UTC (no offset)
 const char* ntpServer = "pool.ntp.org";
 const long  gmtOffset_sec = 0;
@@ -45,6 +47,8 @@ Adafruit_SH1106G display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, -1);
 WiFiClient net;
 MQTTClient client;
 
+
+// Function connecting the ESP to the Wifi Specified in the constants
 void connectWiFi() {
   WiFi.setHostname("ESPDev1");
   WiFi.begin(ssid, password);
@@ -58,6 +62,8 @@ void connectWiFi() {
   Serial.println("\nWiFi connected.");
 }
 
+
+// Function connecting to the MQTT Broker
 void connectMQTT() {
   if (!client.connected()) {
     client.begin(mqttServer, mqttPort, net);
@@ -70,6 +76,7 @@ void connectMQTT() {
   }
 }
 
+// Time formatting function
 String getTime(bool useUtcPlus2) {
   time_t now = time(nullptr);
   struct tm* timeinfo;
@@ -92,6 +99,8 @@ String getTime(bool useUtcPlus2) {
   return String(timeStr);
 }
 
+
+// JSON Formatter and constructor of the data information used by the db after fetching from broker
 bool sendJSON() {
   String ti = getTime(false);
 
@@ -110,6 +119,8 @@ bool sendJSON() {
   return sent;
 }
 
+
+// Standard Setup function, sets the bme, the OLED, wifi, ntp, starts the first reding and 
 void setup() {
   Serial.begin(115200);
   delay(1000);
@@ -165,6 +176,8 @@ void setup() {
   lastDataSend = millis();  // Reset timer so next send happens in 5 minutes
 }
 
+
+// the loooooooooop
 void loop() {
   unsigned long currentMillis = millis();
 
