@@ -1,4 +1,3 @@
-version: '3.8'
 
 services:
   #frontend:
@@ -20,9 +19,9 @@ services:
       context: .
       dockerfile: ./docker/php-api/Dockerfile
     volumes:
-      - ./src:/var/www/html
+      - ./src:/usr/share/nginx/html/project
     ports:
-      - "8081:80" 
+      - "8081:80"
     depends_on:
       - db
 
