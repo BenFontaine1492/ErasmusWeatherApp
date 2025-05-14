@@ -23,7 +23,7 @@ DB_CONFIG = {
     'user': 'user',
     'password': 'pass'
 }
-
+        
 # Connect to the database
 def connect_db():
     try:
@@ -55,16 +55,56 @@ def on_message(client, userdata, msg):
         time = data.get("time", None)
         pressure = float(data.get("pressure", 0.0))
         location = data.get("location", "Unknown")
+    
+        # Validation thresholds
+        thresholds = {
+            "temp_max": 50.0,       # Max 50°C
+            "temp_min": -20.0,      # Min -20°C
+            "hum_max": 80.0,        # Max 80%
+            "hum_min": 0.0,         # Min 0%
+            "pressure_max": 1050.0, # Max 1050 hPa
+            "pressure_min": 800.0   # Min 800 hPa
+        }
+
+        warnings = {}
+
+        # Temperature checks
+        if temp > thresholds["temp_max"]:
+            warnings["temp_high"] = f"Temperature too high: {temp}°C"
+        elif temp < thresholds["temp_min"]:
+            warnings["temp_low"] = f"Temperature too low: {temp}°C"
+
+        # Humidity checks
+        if hum > thresholds["hum_max"]:
+            warnings["hum_high"] = f"Humidity too high: {hum}%"
+        elif hum < thresholds["hum_min"]:
+            warnings["hum_low"] = f"Humidity too low: {hum}%"
+
+        # Pressure checks
+        if pressure > thresholds["pressure_max"]:
+            warnings["pressure_high"] = f"Pressure too high: {pressure} hPa"
+        elif pressure < thresholds["pressure_min"]:
+            warnings["pressure_low"] = f"Pressure too low: {pressure} hPa"
 
         # Insert into DB
         conn = connect_db()
         cursor = conn.cursor()
 
-        insert_query = """
-            INSERT INTO weather_data_ger (temp, hum, time, pressure, location)
-            VALUES (%s, %s, %s, %s, %s)
+        city = location.lower()
+        if city == "mariehamn":
+            table_name = "weather_data_fin"
+        elif city == "wuerzburg":
+            table_name = "weather_data_ger"
+        else:
+            logging.warning(f"⚠️ Unknown location '{location}'")
+            
+
+        insert_query = f"""
+            INSERT INTO {table_name} (temp, hum, time, pressure, location, warnings)
+            VALUES (%s, %s, %s, %s, %s, %s)
         """
-        values = (temp, hum, time, pressure, location)
+
+        values = (temp, hum, time, pressure, location, json.dumps(warnings))
 
         logging.info(f"📝 Inserting into DB: {values}")
         cursor.execute(insert_query, values)
