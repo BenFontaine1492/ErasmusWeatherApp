@@ -111,6 +111,31 @@ components:
           type: string
           format: date-time
           example: "2023-04-01 12:00:00"
+        warnings:
+          type: [string, "null"]
+          format: json
+          description: >
+            JSON object returned as a string indicating environmental warnings.
+            Each key represents a type of warning and has an error string if triggered.
+            <br>
+            Possible keys include:
+              - temp_high: > 50
+              - temp_low: < -20
+              - hum_high: > 80
+              - hum_low: > 0
+              - pressure_high: > 1050
+              - pressure_low: < 800
+            
+            This field is `null` if no warnings are present.
+          example: '{
+              "temp_high": "Temperature too high: {temp}°C", 
+              "temp_low": "Temperature too low: {temp}°C",
+              "hum_high": "Humidity too high: {hum}%",
+              "hum_low": "Humidity too low: {hum}%",
+              "pressure_high": "Pressure too high: {pressure} hPa",
+              "pressure_low": "Pressure too low: {pressure} hPa"
+            }' 
+
 
     Error:
       type: object
