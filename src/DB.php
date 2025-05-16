@@ -3,92 +3,131 @@ declare(strict_types = 1);
 
 class DB {
 
-    private mysqli $conn;
-
-    private array $settings = [
-        'host' => 'db',
-        'db' => 'weather',
-        'user' => 'user',
-        'password' => 'pass'
-    ];
+    private string $url = 'http://db:8086';
+    private string $org = 'your-org'; // Set this to your InfluxDB organization
+    private string $bucket = 'weather';
+    private string $token = 'your-token'; // Set your InfluxDB token here
 
     private array $tables = [
         'weather_data_ger',
         'weather_data_fin'
     ];
 
-    function __construct()
+    public function __construct()
     {
-        $this -> conn = new mysqli($this -> settings['host'], $this -> settings['user'], $this -> settings['password'], $this -> settings['db']);
-        //check db connection
-        if ($this -> conn -> connect_error) {
-            Response::internalError('Database connection failed');
-        }
+        // You could check connectivity here if needed
     }
 
-    public function getDataFromTable($table, DateValue|null $startDate = null, DateValue|null $endDate = null)
+    public function getDataFromTable($table, DateValue|null $startDate = null, DateValue|null $endDate = null): array
     {
-        //check table
-        if (!in_array($table, $this -> tables, )) {
+        if (!in_array($table, $this->tables)) {
             Response::internalError('Non existant db table');
         }
 
-        // Default Query
-        $sql = "SELECT * FROM `$table`";
-        $types = '';
-        $params = [];
+        $start = $startDate ? $startDate->get() : '-1h';
+        $end = $endDate ? $endDate->get() : 'now()';
 
-        // Query in case Dates are provided
-        if ($startDate instanceof DateValue && $endDate instanceof DateValue) {
-            $sql .= " WHERE time BETWEEN ? AND ?";
-            $types = 'ss';
-            $params = [$startDate -> get(), $endDate -> get()];
+        $flux = <<<EOT
+        from(bucket: "{$this->bucket}")
+        |> range(start: $start, stop: $end)
+        |> filter(fn: (r) => r._measurement == "$table")
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> keep(columns: ["_time", "temp", "hum", "pressure", "warnings", "location"])
+        |> sort(columns: ["_time"], desc: true)
+        EOT;
+
+
+        file_put_contents("/debug/flux_query.txt", $flux);
+
+        return $this->queryInflux($flux);
+    }
+
+    public function getLastFromTable($table): array
+    {
+        if (!in_array($table, $this->tables)) {
+            Response::internalError('Non existant db table');
         }
 
-        $sql .= " ORDER BY time DESC";
+        $flux = <<<EOT
+        from(bucket: "{$this->bucket}")
+        |> range(start: -30d)
+        |> filter(fn: (r) => r._measurement == "$table")
+        |> pivot(rowKey:["_time"], columnKey: ["_field"], valueColumn: "_value")
+        |> keep(columns: ["_time", "temp", "hum", "pressure", "warnings", "location"])
+        |> sort(columns: ["_time"], desc: true)
+        |> limit(n: 1)
+        EOT;
+        
+        file_put_contents("/debug/flux_query_latest.txt", $flux);
 
-        $stmt = $this -> conn -> prepare($sql);
-        if ($types) {
-            $stmt->bind_param($types, ...$params);
+        $results = $this->queryInflux($flux);
+
+        return $results[0] ?? ["no data available"];
+    }
+
+    private function queryInflux(string $flux): array
+    {
+        $ch = curl_init();
+
+        curl_setopt($ch, CURLOPT_URL, "{$this->url}/api/v2/query?org={$this->org}");
+        curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+        curl_setopt($ch, CURLOPT_POST, true);
+        curl_setopt($ch, CURLOPT_POSTFIELDS, $flux);
+        curl_setopt($ch, CURLOPT_HTTPHEADER, [
+            "Authorization: Token {$this->token}",
+            "Content-Type: application/vnd.flux",
+            "Accept: application/csv"
+        ]);
+
+        $response = curl_exec($ch);
+        $error = curl_error($ch);
+        curl_close($ch);
+            
+        if ($error) {
+            Response::internalError("InfluxDB request failed: $error");
         }
 
-        $stmt->execute();
-        $result = $stmt->get_result();
-
+        return $this->parseCsv($response);
+    }
+    private function parseCsv(string $csv): array
+    {
+        $lines = explode("\n", $csv);
         $data = [];
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row;
+        $headers = [];
+    
+        foreach ($lines as $line) {
+            // Skip metadata and empty lines
+            if (str_starts_with($line, '#') || trim($line) === '') {
+                continue;
+            }
+    
+            $fields = str_getcsv($line);
+    
+            if (empty($headers)) {
+                $headers = $fields;
+                continue;
+            }
+    
+            $row = array_combine($headers, $fields);
+    
+            if (!$row) {
+                continue;
+            }
+    
+            $entry = [
+                'time' => $row['_time'] ?? null,
+                'temp' => isset($row['temp']) ? (float)$row['temp'] : null,
+                'hum' => isset($row['hum']) ? (float)$row['hum'] : null,
+                'pressure' => isset($row['pressure']) ? (float)$row['pressure'] : null,
+                'warnings' => isset($row['warnings']) ? json_decode($row['warnings'], true) : [],
+                'location' => $row['location'] ?? 'unknown'
+            ];
+    
+            $data[] = $entry;
         }
-
-        $stmt->close();
-
+    
         return $data;
     }
-
-    public function getLastFromTable($table) {
-        //check table
-        if (!in_array($table, $this -> tables)) {
-            Response::internalError('Non existant db table');
-        }
-
-        // Default Query
-        $sql = "SELECT * FROM `$table`";
-        $types = '';
-        $params = [];
-
-        $sql .= " ORDER BY time DESC LIMIT 1";
-
-        $stmt = $this -> conn -> prepare($sql);
-        if ($types) {
-            $stmt->bind_param($types, ...$params);
-        }
-
-        $stmt -> execute();
-        $result = $stmt->get_result();
-
-        $stmt -> close();
-
-        return $result->fetch_assoc();
-    }
+    
 }
 ?>
