@@ -15,6 +15,7 @@ services:
   #      - php
         
   php:
+    container_name: php
     build:
       context: .
       dockerfile: ./docker/php-api/Dockerfile
@@ -27,6 +28,7 @@ services:
 
   swagger-ui:
     image: swaggerapi/swagger-ui
+    container_name: swagger-ui
     ports:
       - "8082:8080"
     environment:
@@ -35,35 +37,19 @@ services:
       - ./docs/swagger:/swagger
 
   mqtt-subscriber:
+    container_name: mqtt-subscriber
     build:
       context: .
       dockerfile: ./docker/python/Dockerfile
     ports:
       - "8083:80"
-    container_name: mqtt-subscriber
     depends_on:
       - db
     restart: always
 
-  mysql-cron-backup:
-    image: fradelg/mysql-cron-backup
-    depends_on:
-      - db
-    volumes:
-      - ./backup:/backup
-    environment:
-      - MYSQL_HOST=mysql_main
-      - MYSQL_USER=root
-      - MYSQL_PASS=root
-      - MAX_BACKUPS=15
-      - INIT_BACKUP=0
-      # Every day at 03:00
-      - CRON_TIME=0 3 * * *
-      # Make it small
-      - GZIP_LEVEL=9
-    restart: unless-stopped
   db:
     image: influxdb:2.7
+    container_name: db
     ports:
       - "8086:8086"
     volumes:
@@ -75,6 +61,20 @@ services:
       - DOCKER_INFLUXDB_INIT_ORG=your-org
       - DOCKER_INFLUXDB_INIT_BUCKET=weather
       - DOCKER_INFLUXDB_INIT_ADMIN_TOKEN=your-token
+
+  backup:
+    build:
+      context: .
+      dockerfile: ./docker/db-backup/Dockerfile
+    container_name: db-backup
+    volumes:
+      - influxdb-data:/var/lib/influxdb2 # Zugriff auf Datenbankvolumen
+      - ./backup:/backup               # Backups auf Host speichern
+    depends_on:
+      - db
+    environment:
+      - INFLUX_TOKEN=your-token # Token zur Authentifizierung
+    restart: always
 
 volumes:
     influxdb-data:
