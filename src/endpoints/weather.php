@@ -90,6 +90,10 @@ function getLatest($args) {
         Response::badRequest('invalid date time parameters provided');
     }
 
-    new Response($result);
+    if ($result) {
+        new Response($result);
+    } else {
+        new Response(new stdClass(), 200);
+    }
 }
 ?>
