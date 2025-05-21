@@ -18,6 +18,8 @@ This command installs all necessary Python and JavaScript dependencies (via `mak
 
 > 💡 Make sure you're running on **Linux** or **WSL** (Ne, Jakob Zwinkersmiley).
 
+*editors note: i WILL ~~touch you in places~~ thank you later Ben*
+
 For other commands (restarting containers, rebuilding, etc.), refer to the `Makefile`.
 
 ---
