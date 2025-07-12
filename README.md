@@ -87,4 +87,4 @@ To enable the frontend:
 
 ### 🗄️ Database
 
-- [MySQL](https://dev.mysql.com/doc/)
+- [InfluxDB]([https://dev.mysql.com/doc/](https://www.influxdata.com/lp/influxdb-database/?utm_source=bing&utm_medium=cpc&utm_campaign=2020-09-03_Cloud_Traffic_Brand-InfluxDB_INTL&utm_term=influxdb&msclkid=4dbfe58bf0371d14fbfd8df914946c8a))
